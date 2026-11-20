@@ -1,0 +1,98 @@
+name: notifyflow
+x-db: &db
+  image: postgres:17.11-alpine
+  restart: unless-stopped
+  environment: &db-env
+    POSTGRES_DB: notifyflow
+    POSTGRES_USER: notifyflow
+    POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+  healthcheck:
+    test: [CMD-SHELL, 'pg_isready -U notifyflow -d notifyflow']
+    interval: 3s
+    timeout: 3s
+    retries: 30
+  networks: [backend]
+x-app-env: &app-env
+  DB_USER: notifyflow
+  DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+  RABBIT_HOST: rabbitmq
+  RABBIT_USER: notifyflow
+  RABBIT_PASSWORD: ${RABBIT_PASSWORD:?Set RABBIT_PASSWORD}
+  SERVER_PORT: 8080
+x-app: &app
+  restart: unless-stopped
+  networks: [backend]
+  healthcheck:
+    test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8080/actuator/health/readiness']
+    interval: 5s
+    timeout: 4s
+    retries: 30
+    start_period: 30s
+services:
+  api-db:
+    <<: *db
+    volumes: [api-data:/var/lib/postgresql/data]
+  worker-db:
+    <<: *db
+    volumes: [worker-data:/var/lib/postgresql/data]
+  provider-db:
+    <<: *db
+    volumes: [provider-data:/var/lib/postgresql/data]
+  rabbitmq:
+    image: rabbitmq:4.2.5-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: notifyflow
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:?Set RABBIT_PASSWORD}
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    ports: ['127.0.0.1:${MANAGEMENT_PORT:-15672}:15672']
+    volumes: [rabbit-data:/var/lib/rabbitmq]
+    networks: [backend]
+  provider:
+    <<: *app
+    image: notifyflow-provider:0.1.0
+    build:
+      context: .
+      args: {MODULE: provider-simulator}
+    environment:
+      <<: *app-env
+      DB_URL: jdbc:postgresql://provider-db:5432/notifyflow
+    depends_on:
+      provider-db: {condition: service_healthy}
+  worker:
+    <<: *app
+    image: notifyflow-worker:0.1.0
+    build:
+      context: .
+      args: {MODULE: notifyflow-worker}
+    environment:
+      <<: *app-env
+      DB_URL: jdbc:postgresql://worker-db:5432/notifyflow
+      PROVIDER_URL: http://provider:8080
+    depends_on:
+      worker-db: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+      provider: {condition: service_healthy}
+  api:
+    <<: *app
+    image: notifyflow-api:0.1.0
+    build:
+      context: .
+      args: {MODULE: notifyflow-api}
+    environment:
+      <<: *app-env
+      DB_URL: jdbc:postgresql://api-db:5432/notifyflow
+      WORKER_URL: http://worker:8080
+    depends_on:
+      api-db: {condition: service_healthy}
+    ports: ['127.0.0.1:${API_PORT:-8080}:8080']
+networks:
+  backend:
+volumes:
+  api-data:
+  worker-data:
+  provider-data:
+  rabbit-data:

@@ -1,0 +1,12 @@
+services:
+  api:
+    environment:
+      NOTIFYFLOW_RETRY_BASE_MS: '300'
+  provider:
+    environment:
+      SCENARIOS_ENABLED: 'true'
+  worker:
+    environment:
+      SPRING_PROFILES_ACTIVE: failure-test
+      NOTIFYFLOW_RETRY_BASE_MS: '300'
+      NOTIFYFLOW_PROVIDER_TIMEOUT_MS: '500'
