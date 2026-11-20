@@ -2,8 +2,9 @@ param([string]$BaseUrl='http://localhost:8080',[string]$Project='notifyflow')
 $ErrorActionPreference='Stop'
 if($Project -notmatch '^notifyflow(?:-[a-z0-9]+)?$') { throw 'Use a task-owned notifyflow Compose project' }
 $compose=@('compose','-p',$Project,'-f','compose.yaml','-f','compose.failure.yaml')
+$dockerExecutable=(Get-Command docker -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 function Docker([string[]]$Arguments) {
-  $output=& docker @Arguments
+  $output=& $dockerExecutable @Arguments
   if($LASTEXITCODE -ne 0) { throw "Docker command failed: $($Arguments[0..1] -join ' ')" }
   return $output
 }
