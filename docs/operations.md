@@ -32,7 +32,7 @@ Use RabbitMQ Management for main/retry/DLQ queue counts, bindings and safe indiv
 
 API and worker expose Prometheus at `/actuator/prometheus`; worker is internal, reachable with `docker compose exec worker wget -qO- http://localhost:8080/actuator/prometheus`. Micrometer names use dots in code and underscores in Prometheus. Relevant names: `notifyflow.outbox.pending`, `notifyflow.outbox.oldest.age` (seconds), `notifyflow.publish.success/failure`, `notifyflow.consumer.processed/duplicate`, `notifyflow.retry.count`, `notifyflow.dlq.count`, `notifyflow.delivery.success/failure`, `notifyflow.processing.duration`. Counters reflect process lifetime and reset on restart; durable rows are authoritative. Outbox gauges query indexed pending rows; no alert thresholds are invented.
 
-JSON structured logs carry event, notificationId, eventId, deliveryId and correlationId in worker event messages. The intake creates a bounded UUID correlation ID; deliveryId is stable eventId. Publisher failure logs contain eventId and a safe category, never message bodies or credentials.
+JSON structured logs carry event, notificationId, eventId, deliveryId and correlationId in worker event messages. The intake creates a bounded UUID correlation ID; deliveryId is stable eventId. Publisher failure logs contain eventId and a safe category, never message bodies or credentials. `notifyflow.consumer.redelivered` and `notifyflow.poison.count` distinguish broker redelivery from contract quarantine. Terminal AMQP headers include failureCategory, eventId, notificationId, attemptNumber and correlationId, plus a publication timestamp.
 
 ## Runbooks
 

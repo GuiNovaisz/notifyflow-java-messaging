@@ -66,6 +66,11 @@ foreach($scenario in @(@('FAIL_TWICE','DELIVERED',3),@('PERMANENT','DEAD_LETTERE
   if($attempts -ne [string]$scenario[2]) { throw "Unexpected attempt count for $($scenario[0])" }
   Write-Output "PASS $($scenario[0]): $($scenario[1]), attempts=$attempts"
 }
-$dlq=Sql 'worker-db' "select count(*) from outbox_events where exchange_name='notifyflow.dead.v1' and published_at is not null"
+$deadline=[DateTime]::UtcNow.AddSeconds(30)
+do {
+  $dlq=Sql 'worker-db' "select count(*) from outbox_events where exchange_name='notifyflow.dead.v1' and published_at is not null"
+  if([int]$dlq -ge 3) { break }
+  Start-Sleep -Milliseconds 250
+} while([DateTime]::UtcNow -lt $deadline)
 if([int]$dlq -lt 3) { throw 'Terminal messages were not confirmed to DLQ' }
 Write-Output 'PASS terminal outbox messages confirmed to DLQ'
