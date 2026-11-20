@@ -1,4 +1,7 @@
 services:
+  api:
+    environment:
+      NOTIFYFLOW_RETRY_BASE_MS: '300'
   provider:
     environment:
       SCENARIOS_ENABLED: 'true'
