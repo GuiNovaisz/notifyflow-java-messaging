@@ -34,8 +34,12 @@ jobs:
       - name: Set ephemeral credentials
         shell: pwsh
         run: |
-          "DB_PASSWORD=$([guid]::NewGuid().ToString('N'))" >> $env:GITHUB_ENV
-          "RABBIT_PASSWORD=$([guid]::NewGuid().ToString('N'))" >> $env:GITHUB_ENV
+          $dbPassword=[guid]::NewGuid().ToString('N')
+          $rabbitPassword=[guid]::NewGuid().ToString('N')
+          Write-Output "::add-mask::$dbPassword"
+          Write-Output "::add-mask::$rabbitPassword"
+          "DB_PASSWORD=$dbPassword" >> $env:GITHUB_ENV
+          "RABBIT_PASSWORD=$rabbitPassword" >> $env:GITHUB_ENV
       - run: docker compose -f compose.yaml -f compose.failure.yaml up -d --build --wait --wait-timeout 180
       - shell: pwsh
         run: ./scripts/smoke.ps1
