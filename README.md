@@ -1,8 +1,8 @@
-# NotifyFlow — Reliable Messaging Foundation
+# NotifyFlow v0.1.0 — Reliable Messaging Foundation
 
 Java 21 · Spring Boot · PostgreSQL · RabbitMQ · Transactional Outbox
 
-**Versão de desenvolvimento: `0.1.0-dev`. Backend-first, sem frontend ou provedor pago.**
+**Release estável: [v0.1.0 — Reliable Messaging Foundation](https://github.com/GuiNovaisz/notifyflow-java-messaging/releases/tag/v0.1.0). Backend-first, sem frontend ou provedor pago.**
 
 ## Português
 
@@ -35,7 +35,7 @@ Três deployables e bancos com ownership independente. Maven multi-module: `noti
 - Crash após efeito no provider e antes de commit/ACK gera redelivery com a mesma chave: duas chamadas físicas, um efeito lógico.
 - Quatro tentativas no máximo; falha permanente vai diretamente à DLQ. Poison messages preservam os bytes na quarantine/DLQ.
 
-Não há exactly-once transport, ordering global, autenticação pública, retenção automática, redrive automático, alta disponibilidade do broker de nó único ou garantia contra perda dos volumes. Timeout pode ter concluído o efeito externo e ainda terminar em DLQ: reconciliação é necessária antes de redrive.
+Não há exactly-once transport, ordering global, autenticação pública, retenção automática, redrive automático, alta disponibilidade do broker de nó único ou garantia contra perda dos volumes. O provider é intencionalmente simulado; entrega real de e-mail está fora do escopo. Timeout pode ter concluído o efeito externo e ainda terminar em DLQ: reconciliação é necessária antes de redrive.
 
 ### API
 
@@ -76,7 +76,7 @@ Actuator distingue liveness de readiness. Readiness da API exige banco, permitin
 
 Leia [arquitetura e versões](docs/architecture.md), [topologia/ACK](docs/rabbitmq-topology.md), [ADRs](docs/adr), [guia de estudo](docs/learning/README.md), [entrevista](docs/learning/interview-guide.md) e [exercícios sem respostas](docs/learning/exercises.md). RabbitMQ foi escolhido para trabalho assíncrono com workers, ACK/routing/redelivery/DLQ; Kafka pode ser avaliado futuramente se streams/replay/fan-out se tornarem requisitos.
 
-Roadmap: revisão independente e release posterior; `v0.2.0 — Operations Console` poderá acrescentar UI operacional. Retenção, reconciliação/redrive auditável e integração de provider real exigem análise própria. Nesta missão: sem merge em dev/main, tag ou release.
+Roadmap após a release v0.1.0: `v0.2.0 — Operations Console` poderá acrescentar UI operacional. Retenção/dedup lifecycle, retry jitter, readiness adicional de consumo, reconciliação/redrive auditável, testes de power loss, broker replicado e integração de provider real exigem análise própria. Kafka somente será avaliado mediante requisito real de streams/replay/fan-out.
 
 The complete English version follows below.
 
@@ -84,7 +84,7 @@ The complete English version follows below.
 
 NotifyFlow demonstrates reliable asynchronous processing under failure, with real infrastructure and verifiable invariants. Email is simulated: the central problem is avoiding silent loss and duplicated business effects when the database, broker, worker or external provider fails.
 
-It complements LedgerFlow, OrderSphere and SupportHub with messaging engineering. This is a backend-first development milestone, `0.1.0-dev`, without a frontend or paid provider, and makes no production-ready claim.
+It complements LedgerFlow, OrderSphere and SupportHub with messaging engineering. [v0.1.0 — Reliable Messaging Foundation](https://github.com/GuiNovaisz/notifyflow-java-messaging/releases/tag/v0.1.0) is the first stable release: backend-first, without a frontend or paid provider, and with no production-ready claim.
 
 ### Architecture
 
@@ -103,7 +103,7 @@ The Maven reactor contains `notifyflow-api`, `notifyflow-worker`, `provider-simu
 - Crash after provider effect and before worker commit/ACK causes redelivery with the same key: two physical requests, one logical effect.
 - At most four attempts; permanent failure bypasses retries; poison messages remain inspectable in quarantine/DLQ.
 
-Exactly-once transport, global ordering, public authentication, automated retention/redrive, single-node broker high availability and protection against volume loss are not guaranteed. A timed-out provider request may already have delivered even when worker retries eventually exhaust; reconcile before replay.
+Exactly-once transport, global ordering, public authentication, automated retention/redrive, single-node broker high availability and protection against volume loss are not guaranteed. The provider is intentionally simulated; real email delivery is outside scope. A timed-out provider request may already have delivered even when worker retries eventually exhaust; reconcile before replay.
 
 ### API
 
@@ -139,7 +139,7 @@ Only API and RabbitMQ Management ports bind loopback. Databases, AMQP, provider 
 
 [Operations](docs/operations.md) provides inspection queries and outage/DLQ/backlog/provider runbooks. [Architecture](docs/architecture.md) records versions and boundaries; [topology](docs/rabbitmq-topology.md) documents ACKs and retry; [ADRs](docs/adr) capture alternatives and tradeoffs. RabbitMQ suits this worker-queue workload; Kafka may later suit streams/replay/fan-out if required. [Learning](docs/learning/README.md), [interview prompts](docs/learning/interview-guide.md) and [exercises](docs/learning/exercises.md) refer to the actual code, without exercise solutions.
 
-Roadmap: independent review, later integration/release; a future `v0.2.0 — Operations Console` may add operations UI. Retention, audited reconciliation/redrive and real provider integration need their own design work. This mission performs no merge into dev/main and creates no stable tag or release.
+Roadmap after v0.1.0: a future `v0.2.0 — Operations Console` may add operations UI. Retention/dedup lifecycle, retry jitter, additional consumption readiness, audited reconciliation/redrive, power-loss testing, replicated broker and real provider integration need their own design work. Kafka will only be evaluated for real streams/replay/fan-out requirements.
 
 License: [MIT](LICENSE).
 
