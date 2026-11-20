@@ -7,7 +7,7 @@ FROM eclipse-temurin:21.0.13_9-jre-alpine
 RUN addgroup -S notifyflow && adduser -S -G notifyflow notifyflow
 WORKDIR /app
 ARG MODULE
-COPY --from=build /build/${MODULE}/target/${MODULE}-0.1.0-dev-exec.jar /app/app.jar
+COPY --from=build /build/${MODULE}/target/${MODULE}-0.1.0-exec.jar /app/app.jar
 USER notifyflow
 EXPOSE 8080
 ENTRYPOINT ["java","-XX:MaxRAMPercentage=65","-jar","/app/app.jar"]

@@ -53,7 +53,7 @@ services:
     networks: [backend]
   provider:
     <<: *app
-    image: notifyflow-provider:0.1.0-dev
+    image: notifyflow-provider:0.1.0
     build:
       context: .
       args: {MODULE: provider-simulator}
@@ -64,7 +64,7 @@ services:
       provider-db: {condition: service_healthy}
   worker:
     <<: *app
-    image: notifyflow-worker:0.1.0-dev
+    image: notifyflow-worker:0.1.0
     build:
       context: .
       args: {MODULE: notifyflow-worker}
@@ -78,7 +78,7 @@ services:
       provider: {condition: service_healthy}
   api:
     <<: *app
-    image: notifyflow-api:0.1.0-dev
+    image: notifyflow-api:0.1.0
     build:
       context: .
       args: {MODULE: notifyflow-api}
