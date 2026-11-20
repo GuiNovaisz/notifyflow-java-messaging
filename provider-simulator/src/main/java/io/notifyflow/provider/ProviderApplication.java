@@ -9,7 +9,17 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootApplication
 public class ProviderApplication {
-    public static void main(String[] args) { SpringApplication.run(ProviderApplication.class,args); }
-    @Bean Clock clock() { return Clock.systemUTC(); }
-    @Bean TransactionTemplate transactions(PlatformTransactionManager manager) { return new TransactionTemplate(manager); }
+  public static void main(String[] args) {
+    SpringApplication.run(ProviderApplication.class, args);
+  }
+
+  @Bean
+  Clock clock() {
+    return Clock.systemUTC();
+  }
+
+  @Bean
+  TransactionTemplate transactions(PlatformTransactionManager manager) {
+    return new TransactionTemplate(manager);
+  }
 }
